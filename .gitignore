@@ -3,4 +3,5 @@
 *.csv
 .vscode
 *.out
+*.tar.gz
 experiments/
