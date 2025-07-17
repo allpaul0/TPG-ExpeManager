@@ -125,7 +125,7 @@ parameters_set = [
         **instructionSet
     }
     for seed in range(5)
-    for instrType in ['int', 'double']
+    for instrType in ['int', 'float', 'double']
     for instructionSet in instructionsSets
 ]
 
