@@ -33,7 +33,7 @@ def modify_json(expe_folder, parameters):
     for key, value in parameters.items():
         if key in data:
             data[key] = value
-        else:
+        elif key != 'instrSetName':
             print(f"Key '{key}' not found in JSON file.")
 
     # Save the modified JSON data back to the file
@@ -41,7 +41,7 @@ def modify_json(expe_folder, parameters):
         json.dump(data, json_file, indent=4)
 
 def experiment_name(parameters):
-    return '_'.join(f"{key}-{value}" for key, value in parameters.items())
+    return '_'.join(f"{key}-{value}" for key, value in parameters.items() if key != 'instrSetName')
 
 def generate_files(parameters_set, expe_path):
     for parameters in parameters_set:
@@ -58,59 +58,60 @@ def submit_jobs(parameters_set, expe_path):
 
 def parse_results(parameters_set, expe_path):
     import pandas as pd
-    results = []
+    results_df = pd.DataFrame()
     for parameters in parameters_set:
         expe_name = experiment_name(parameters)
         file = os.path.join(expe_path, expe_name, 'outLogs', 'garbage.ods')
-        with open(file) as f:
-            lines = f.readlines()
-        columns = lines[1].split()
-        df = pd.read_csv(file, delim_whitespace=True, skiprows=2, names=columns)
-        max_vsuccess = df['vSuccess'].max()
-        min_vdistMax = df['vDistMax'].min()
-        results.append([parameters['seed'], parameters['instrType'], parameters['scaleFactor'], max_vsuccess, min_vdistMax])
+        if os.path.isfile(file):
+            with open(file) as f:
+                lines = f.readlines()
+            columns = lines[1].split()
+            df = pd.read_csv(file, delim_whitespace=True, skiprows=2, names=columns)
+            df['seed'] = parameters['seed']
+            df['instrType'] = parameters['instrType']
+            df['instrSetName'] = parameters['instrSetName']
+            results_df = pd.concat([results_df, df])
 
-    results_df = pd.DataFrame(results, columns=['seed', 'instrType', 'scaleFactor', 'max_vSuccess', 'min_vDistMax'])
     results_df.to_csv('results.csv', index=False)
 
 instructionsSets = [
-    # base
     {
+        'instrSetName': 'base',
         'useInstrTrig': False,
         'useInstrLogExp': False,
         'useInstrExpensiveArithmetic': True,
         'useInstrComparison': False
     },
-    # comp
     {
+        'instrSetName': 'comp',
         'useInstrTrig': False,
         'useInstrLogExp': False,
         'useInstrExpensiveArithmetic': True,
         'useInstrComparison': True
     },
-    # logexp
     {
+        'instrSetName': 'logexp',
         'useInstrTrig': False,
         'useInstrLogExp': True,
         'useInstrExpensiveArithmetic': True,
         'useInstrComparison': True
     },
-    # trigo
     {
+        'instrSetName': 'trigo',
         'useInstrTrig': True,
         'useInstrLogExp': False,
         'useInstrExpensiveArithmetic': True,
         'useInstrComparison': True
     },
-    # complete
     {
+        'instrSetName': 'complete',
         'useInstrTrig': True,
         'useInstrLogExp': True,
         'useInstrExpensiveArithmetic': True,
         'useInstrComparison': True
     },
-    # low cost
     {
+        'instrSetName': 'lowcost',
         'useInstrTrig': False,
         'useInstrLogExp': True,
         'useInstrExpensiveArithmetic': False,
