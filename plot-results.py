@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plot_results(variable, operation):
+def plot_results(variable, operation, plot):
     # Read the results from CSV file
     results = pd.read_csv('results.csv')
 
@@ -16,18 +16,27 @@ def plot_results(variable, operation):
     # Prepare data for boxplot: one box per (instrType, scaleFactor)
     boxplot_data = []
     labels = []
-    for (instrType, instrSetName), group in grouped.groupby(['instrType', 'instrSetName']):
+    for (instrSetName, instrType), group in grouped.groupby(['instrSetName', 'instrType']):
         boxplot_data.append(group[variable])
         labels.append(f"{instrType}\n{instrSetName}")
 
     plt.figure(figsize=(10, 6))
-    plt.boxplot(boxplot_data)
+    yshift = 0
+    if(plot == 'boxplot'):
+        plt.boxplot(boxplot_data)
+        yshift = 1
+    elif(plot == 'plot'):
+        plt.plot(boxplot_data, 'o')
+    else:
+        raise ValueError("Plot must be either 'boxplot' or 'plot'")
     plt.ylabel(variable)
     plt.title(operation + ' ' + variable + ' by instrType and instrSetName (averaged by seed)')
-    plt.xticks([y + 1 for y in range(len(boxplot_data))], rotation=45, labels=labels)
+    plt.xticks([y + yshift for y in range(len(boxplot_data))], rotation=45, labels=labels)
     plt.tight_layout()
-    plt.savefig(variable + '_boxplot.pdf')  # Save to PDF
+    plt.savefig(variable + '_' + plot + '.pdf')  # Save to PDF
     plt.show()
 
-plot_results('vSuccess', 'max')
-plot_results('vDistMax', 'min')
+plot_results('vSuccess', 'max', 'boxplot')
+plot_results('vDistMax', 'min', 'boxplot')
+plot_results('vSuccess', 'max', 'plot')
+plot_results('vDistMax', 'min', 'plot')
