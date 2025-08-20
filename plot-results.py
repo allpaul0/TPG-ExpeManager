@@ -27,6 +27,7 @@ def plot_results(variable, operation, plot):
         yshift = 1
     elif(plot == 'plot'):
         plt.plot(boxplot_data, 'o')
+        plt.legend(set(grouped['seed'].tolist()), title='seed')
     else:
         raise ValueError("Plot must be either 'boxplot' or 'plot'")
     plt.ylabel(variable)
