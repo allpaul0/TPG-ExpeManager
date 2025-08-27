@@ -123,7 +123,8 @@ parameters_set = [
     {
         'seed': seed,
         'instrType': instrType,
-        **instructionSet
+        **instructionSet,
+        'timeMaxTraining': 28800
     }
     for seed in range(5)
     for instrType in ['int', 'float', 'double']
