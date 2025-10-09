@@ -4,4 +4,5 @@
 #SBATCH --job-name=build-container
 #SBATCH --cpus-per-task=8
 #SBTACH --time=3600
-apptainer build gegelati-arm.sif gegelati-arm.def
+cd armlearn-wrapper/
+apptainer build container/gegelati-armlearn.sif container/gegelati-armlearn.def

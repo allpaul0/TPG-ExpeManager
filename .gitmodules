@@ -1,3 +1,4 @@
 [submodule "armlearn-wrapper"]
 	path = armlearn-wrapper
 	url = https://github.com/gegelati/armlearn-wrapper.git
+	branch = intEvaluation
