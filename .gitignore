@@ -6,3 +6,4 @@
 *.tar.gz
 experiments*/
 memo.txt
+/venv

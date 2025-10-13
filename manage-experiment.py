@@ -66,7 +66,7 @@ def parse_results(parameters_set, expe_path):
             with open(file) as f:
                 lines = f.readlines()
             columns = lines[1].split()
-            df = pd.read_csv(file, delim_whitespace=True, skiprows=2, names=columns)
+            df = pd.read_csv(file, sep=r'\s+', skiprows=2, names=columns)
             df['seed'] = parameters['seed']
             df['instrType'] = parameters['instrType']
             df['instrSetName'] = parameters['instrSetName']
@@ -125,10 +125,35 @@ parameters_set = [
         'instrType': instrType,
         **instructionSet
     }
-    for seed in range(5)
+    for seed in range(10)
     for instrType in ['int', 'float', 'double']
     for instructionSet in instructionsSets
+
 ]
+
+# Add scale extension experiments
+scale_factors = [1, 10, 100]
+scale_extension_set = [
+    {
+        'seed': seed,
+        'instrType': 'int',
+        'useInstrTrig': True,
+        'useInstrLogExp': True,
+        'scaleFactor': scaleFactor,
+        'instrSetName': f'scaleFactor-{scaleFactor}'
+    }
+    for seed in range(10)
+    for scaleFactor in scale_factors
+]
+
+for extension_set in scale_extension_set:
+    print(extension_set)
+
+# Combine both sets
+SCALE_EXTENSION_SET = True
+all_parameters_set = parameters_set 
+if SCALE_EXTENSION_SET:
+    all_parameters_set += scale_extension_set
 
 parser = argparse.ArgumentParser()
 parser.add_argument('path')
@@ -137,8 +162,8 @@ parser.add_argument('--action', choices=['generate', 'submit', 'parse'])
 args = parser.parse_args()
 
 if args.action == 'generate':
-    generate_files(parameters_set, args.path)
+    generate_files(all_parameters_set, args.path)
 elif args.action == 'submit':
-    submit_jobs(parameters_set, args.path)
+    submit_jobs(all_parameters_set, args.path)
 elif args.action == 'parse':
-    parse_results(parameters_set, args.path)
+    parse_results(all_parameters_set, args.path)
