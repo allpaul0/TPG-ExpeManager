@@ -19,15 +19,15 @@ The scripts are used to:
 
 ## Generate configurations files
 
-`python3 path/to/experiment --action generate`
+`python3 manage-experiment.py --action generate path/to/experiment/folder`
 
 ## Run training on slurm
 
-`python3 path/to/experiment --action submit`
+`python3 manage-experiment.py --action submit path/to/experiment/folder`
 
 ## Parse results and gather them in csv
 
-`python3 path/to/experiment --action parse`
+`python3 manage-experiment.py --action submit path/to/experiment/folder`
 
 Authors: Mickaël Dardaillon, Paul Allaire
 
