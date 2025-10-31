@@ -7,6 +7,7 @@ import shutil
 import subprocess
 
 def copy_files(expe_folder):
+    # Can be configured to select another Learning Environment
     src_folder = 'armlearn-wrapper/params/'
     params_folder = expe_folder + '/params'
     os.makedirs(params_folder, exist_ok=True)
@@ -54,8 +55,11 @@ def submit_jobs(parameters_set, expe_path):
     for parameters in parameters_set:
         expe_name = experiment_name(parameters)
         expe_folder = os.path.join(expe_path, expe_name)
-        subprocess.run(['sbatch', './script-slurm.sh', expe_folder], check=True)
-
+        if SLURM_MANAGED:
+            subprocess.run(['sbatch', './script-slurm.sh', expe_folder], check=True)
+        else:
+            subprocess.run(['./script-local.sh', expe_folder], check=True)
+            
 def parse_results(parameters_set, expe_path):
     import pandas as pd
     results_df = pd.DataFrame()
@@ -146,14 +150,14 @@ scale_extension_set = [
     for scaleFactor in scale_factors
 ]
 
-for extension_set in scale_extension_set:
-    print(extension_set)
-
 # Combine both sets
-SCALE_EXTENSION_SET = True
+SCALE_EXTENSION_SET = False
 all_parameters_set = parameters_set 
 if SCALE_EXTENSION_SET:
     all_parameters_set += scale_extension_set
+
+# Machine uses SLURM to manage jobs
+SLURM_MANAGED = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument('path')
