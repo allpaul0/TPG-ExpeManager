@@ -32,3 +32,13 @@ The scripts are used to:
 Authors: Mickaël Dardaillon, Paul Allaire
 
 **forked** from https://gitlab.insa-rennes.fr/mdardail/robot-arm-setup/
+
+## VENV
+# 1. Create a new virtual environment
+python3 -m venv venv
+
+# 2. Activate it	
+source venv/bin/activate
+
+# 3. Install packages normally
+pip install pandas 
