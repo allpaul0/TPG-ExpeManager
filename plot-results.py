@@ -1,33 +1,86 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plot_results(variable, operation):
-    # Read the results from CSV file
-    results = pd.read_csv('results.csv')
+def plot_results(csv_file, variable):
+    results = pd.read_csv(csv_file)
 
-    # Group by instrType, instrSetName and seed, apply operation to data
-    if(operation == 'max'):
-        grouped = results.groupby(['instrType', 'instrSetName', 'seed'])[variable].max().reset_index()
-    elif(operation == 'min'):
-        grouped = results.groupby(['instrType', 'instrSetName', 'seed'])[variable].min().reset_index()
-    else:
-        raise ValueError("Operation must be either 'max' or 'min'")
-        
-    # Prepare data for boxplot: one box per (instrType, scaleFactor)
+    # Keep only Gen == 99
+    gen99 = results[results['Gen'] == 99]
+
+    # One value per (instrType, instrSetName, seed)
+    grouped = gen99.groupby(
+        ['instrType', 'instrSetName', 'seed'],
+        as_index=False
+    )[variable].mean()
+
+    # ---- ORDER DEFINITIONS ----
+    instrType_order = ['double', 'float', 'fixedpt']
+
+    instrSet_order = [
+        'comp',
+        'logexp',
+        'trigo',
+        'complete',
+        'l2e2_compBare',
+        'l2e2_compZmmul',
+        'l2e2_compExpAr'
+    ]
+
+    # ---- EXACT LABELS (AS DEFINED) ----
+    instrSet_labels = {
+        'comp': "*,/,>,-,+",
+        'logexp': "log,exp," + "*,/,>,-,+",
+        'trigo': "trig," + "*,/,>,-,+",
+        'complete': "trig," + "log,exp," + "*,/,>,-,+",
+        'l2e2_compBare': "log2,exp2," + ">,-,+",
+        'l2e2_compZmmul': "log2,exp2," + "*" + ">,-,+",
+        'l2e2_compExpAr': "log2,exp2," + "*,/" + ">,-,+"
+    }
+
+    # ---- COLOR PER instrType ----
+    instrType_colors = {
+        'double': '#FFA123',   # orange
+        'float': '#FFF600',    # yellow
+        'fixedpt': '#18DCDC'   # light blue
+    }
+
+    # ---- PREPARE BOXPLOT DATA IN ORDER ----
     boxplot_data = []
     labels = []
-    for (instrType, instrSetName), group in grouped.groupby(['instrType', 'instrSetName']):
-        boxplot_data.append(group[variable])
-        labels.append(f"{instrType}\n{instrSetName}")
+    box_instrTypes = []
 
+    for instrType in instrType_order:
+        for instrSet in instrSet_order:
+            subset = grouped[
+                (grouped['instrType'] == instrType) &
+                (grouped['instrSetName'] == instrSet)
+            ]
+
+            if not subset.empty:
+                boxplot_data.append(subset[variable])
+                labels.append("{" + instrSet_labels[instrSet] + "} " + instrType)
+                box_instrTypes.append(instrType)
+
+    # ---- PLOT ----
     plt.figure(figsize=(10, 6))
-    plt.boxplot(boxplot_data)
+    bp = plt.boxplot(
+        boxplot_data,
+        showmeans=False,
+        patch_artist=True
+    )
+
+    # Apply colors
+    for box, instrType in zip(bp['boxes'], box_instrTypes):
+        box.set_facecolor(instrType_colors[instrType])
+
     plt.ylabel(variable)
-    plt.title(operation + ' ' + variable + ' by instrType and instrSetName (averaged by seed)')
-    plt.xticks([y + 1 for y in range(len(boxplot_data))], rotation=45, labels=labels)
+    plt.title('Accuracy by dType and iSet')
+    plt.xticks(range(1, len(labels) + 1),labels,rotation=45,ha='right')
     plt.tight_layout()
-    plt.savefig(variable + '_boxplot.pdf')  # Save to PDF
+    plt.savefig(f"{variable}_boxplot.pdf")
     plt.show()
 
-plot_results('vSuccess', 'max')
-plot_results('vDistMax', 'min')
+
+csv_file = 'results_fixedpt_float_double.csv'
+plot_results(csv_file, 'vDistMax')
+# plot_results(csv_file, 'vSuccess')
