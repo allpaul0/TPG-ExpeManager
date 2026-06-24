@@ -27,7 +27,7 @@ The scripts are used to:
 
 ## Parse results and gather them in csv
 
-`python3 manage-experiment.py --action submit path/to/experiment/folder`
+`python3 manage-experiment.py --action parse path/to/experiment/folder`
 
 Authors: Mickaël Dardaillon, Paul Allaire
 
