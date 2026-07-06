@@ -33,8 +33,24 @@ def prepare_best_per_seed(csv_file, variable, normalized_values=False):
     return best_per_seed, ylabel
 
 
-def plot_results(csv_file, variable, normalized_values=False):
+def plot_results(csv_file, variable, normalized_values=False, use_accuracy=False):
+    
     grouped, ylabel = prepare_best_per_seed(csv_file, variable, normalized_values)
+
+    # If requested, derive accuracy from distance_to_objective and use it as the plotted variable
+    if use_accuracy:
+        if 'vDistMax' not in grouped.columns:
+            raise ValueError(
+                "use_accuracy=True requires a 'vDistMax' column in the data."
+            )
+        grouped = grouped.copy()
+        grouped['accuracy'] = 100-grouped['vDistMax']
+        variable = 'accuracy'
+        ylabel = 'Accuracy'
+
+    # Append a percentage indicator to the ylabel when values are normalized
+    if normalized_values:
+        ylabel = f"{ylabel} (%)"
 
     instrType_order = ['double', 'float', 'fixedpt']
     instrSet_order = [
@@ -69,9 +85,9 @@ def plot_results(csv_file, variable, normalized_values=False):
             if not(
                 instrType == 'double' or
                 instrType == 'fixedpt' and 
-                instrSet in ['l2e2_compZmmul', 'l2e2_compExpAr'] or #'trigo', 'logexp'
+                instrSet in ['l2e2_compZmmul', 'l2e2_compExpAr', 'trigo', 'logexp'] or #'trigo', 'logexp'
                 instrType == 'float' and 
-                instrSet in []): #'trigo', 'logexp'
+                instrSet in ['trigo', 'logexp']): #'trigo', 'logexp'
                 subset = grouped[
                     (grouped['instrType'] == instrType) &
                     (grouped['instrSetName'] == instrSet)
@@ -250,13 +266,13 @@ def plot_pooled_means_and_stds(variable, normalized_values=False):
 csv_file = '../tpg_nextflow/tpg_expe/accuracy_results/results.csv'
 
 # Plot and print distance as %
-plot_results(csv_file, 'vDistMax', normalized_values=True)
-print_tpg_stats(csv_file, 'vDistMax', normalized_values=True)
+plot_results(csv_file, 'vDistMax', normalized_values=True, use_accuracy=True)
+#print_tpg_stats(csv_file, 'vDistMax', normalized_values=True)
 
 # Plot and print success rate normally
-plot_results(csv_file, 'vSuccess')
-print_tpg_stats(csv_file, 'vDistMax', normalized_values=False)
+#plot_results(csv_file, 'vSuccess')
+#print_tpg_stats(csv_file, 'vDistMax', normalized_values=False)
 
-plot_success_and_distance(csv_file, normalized_values=False)
+#plot_success_and_distance(csv_file, normalized_values=False)
 
-plot_pooled_means_and_stds('vDistMax', normalized_values=False)
+#plot_pooled_means_and_stds('vDistMax', normalized_values=False)
